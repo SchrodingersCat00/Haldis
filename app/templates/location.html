@@ -7,25 +7,61 @@
 <div class="row" xmlns="http://www.w3.org/1999/html">
     <div class="col-md-push-1 col-md-10 darker">
         <h3>Location: {{ location.name }}</h3>
-        <span class="glyphicon glyphicon-home"></span>: {{ location.address }} <br/>
-        <span class="glyphicon glyphicon-phone"></span>: {{ location.telephone }} <br/>
+        <span class="glyphicon glyphicon-home"></span>: {{ location.address }} <br />
+        <span class="glyphicon glyphicon-phone"></span>: {{ location.telephone }} <br />
         <span class="glyphicon glyphicon-link"></span>: <a href="{{ location.website}}">{{ location.website }}</a>
     </div>
     <div class="col-md-push-1 col-md-10 darker">
         <h3 id="order-title">Products</h3>
         <table class="table table-hover table-condensed">
             <thead>
-                <tr><th>Name</th><th>Price</th></tr>
-            </thead>
-            <tbody>
-            {% for prod in location.products -%}
                 <tr>
-                    <td>{{ prod.name }}</td>
-                    <td>{{ prod.price|euro }}<td>
+                    <th style="cursor: pointer;" onclick="setFilter('name')">Name</th>
+                    <th style="cursor: pointer;" onclick="setFilter('price')">Price</th>
                 </tr>
-            {%- endfor %}
+            </thead>
+            <tbody id="productList" sorted="true">
+                {% for prod in location.products -%}
+                <tr class="article" data-name="{{ prod.name }}" data-price="{{ prod.price }}">
+                    <td>{{ prod.name }}</td>
+                    <td>{{ prod.price | euro }}</td>
+                </tr>
+                {%- endfor %}
             </tbody>
+            <button id="sortButton" onclick="sortProducts()">Sort Products</button>
         </table>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script>
+
+    const get_attr = (item, attr) => attr === "price" ? parseInt(item.dataset[attr]) : item.dataset[attr];
+
+    const gibmesorter = (attr) =>
+        (a, b) => get_attr(a, attr) == get_attr(b, attr)
+            ? 0
+            : (get_attr(a, attr) > get_attr(b, attr) ? 1 : -1);
+
+    const setFilter = (attr) => sortProducts(gibmesorter(attr));
+
+    function sortProducts(sorter) {
+
+        itemsArr.sort(
+            isSorted ? sorter : (a, b) => -1 * sorter(a, b)
+        );
+
+        for (i = 0; i < itemsArr.length; ++i) {
+            list.appendChild(itemsArr[i]);
+        }
+        isSorted = !isSorted;
+    }
+    var list = document.getElementById('productList');
+
+    var items = list.children;
+    var itemsArr = [...items];
+    var isSorted = true;
+    sortProducts(gibmesorter("name"));
+</script>
 {% endblock %}
